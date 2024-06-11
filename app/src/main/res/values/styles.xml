@@ -1,0 +1,18 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <!-- ActionBarの背景色 -->
+        <item name="colorPrimary">@color/custom_theme_color</item>
+        <!-- ステータスバーの背景色 -->
+        <item name="colorPrimaryDark">@color/custom_theme_color</item>
+        <!-- TabLayoutの下線やRadioButton選択時などの色 -->
+        <item name="colorAccent">@color/custom_theme_color</item>
+        <!--ActionBarの文字色 -->
+        <item name="android:textColorPrimary">@color/custom_theme_color</item>
+        <!-- ウィンドウ背景色 -->
+        <item name="android:windowBackground">@color/custom_theme_color</item>
+        <!-- ナビゲーションバー（戻るキー・ホームキーなどがあるバー）の背景色 -->
+        <item name="android:navigationBarColor">@color/custom_theme_color</item>
+    </style>
+
+</resources>
