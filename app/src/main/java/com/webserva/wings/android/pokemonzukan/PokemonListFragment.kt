@@ -10,10 +10,13 @@ import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.WorkerThread
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import kotlinx.coroutines.launch
 import org.w3c.dom.Text
 import java.io.BufferedReader
 import java.io.InputStream
@@ -29,59 +32,6 @@ class PokemonListFragment : Fragment() {
     companion object {
 
         private const val POKEMON_URL = "https://pokeapi.co/api/v2/pokemon/1";
-    }
-
-    private val adapter: RecyclerAdapter;
-
-    init{
-        adapter = RecyclerAdapter(getPokemonList());
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        var result = "";
-
-        val url = URL(POKEMON_URL);
-        val con = url.openConnection() as HttpURLConnection;
-        // 接続に使ってもよい時間を設定。
-        con.connectTimeout = 1000
-        // データ取得に使ってもよい時間。
-        con.readTimeout = 1000
-        // HTTP接続メソッドをGETに設定。
-        con.requestMethod = "GET"
-
-//        try {
-//            // 接続。
-//            con.connect()
-//            // HttpURLConnectionオブジェクトからレスポンスデータを取得。
-//            val stream = con.inputStream
-//            // レスポンスデータであるInputStreamオブジェクトを文字列に変換。
-//            result = is2String(stream)
-//            // InputStreamオブジェクトを解放。
-//            stream.close()
-//        }
-//        catch(ex: SocketTimeoutException) {
-//            Log.w("pokemon list 情報取得失敗", "通信タイムアウト", ex)
-//        }
-
-        //リストのデータ用意処理
-        view?.let {
-
-//            val _rv = it.findViewById<RecyclerView>(R.id.recyclerView);
-//
-//            val layoutManager = GridLayoutManager(
-//                requireContext(),
-//                2,
-//                RecyclerView.VERTICAL,
-//                false);
-//            _rv.layoutManager = layoutManager;
-//
-//            val pokemonList = getPokemonList();
-//            val adapter = RecyclerAdapter(pokemonList);
-//
-//            _rv.adapter = adapter;
-        }
     }
 
     override fun onCreateView(
@@ -182,7 +132,8 @@ class PokemonListFragment : Fragment() {
         }
     }
 
-    private fun getPokemonList(): MutableList<MutableMap<String, String>> {
+//    @WorkerThread
+    private  fun getPokemonList(): MutableList<MutableMap<String, String>> {
 
         val pokemonList: MutableList<MutableMap<String, String>> = mutableListOf()
 
@@ -213,6 +164,29 @@ class PokemonListFragment : Fragment() {
 //        Glide.with(this)
 //            .load(imageUrl)
 //            .into(imageView)
+
+//
+//        val url = URL(POKEMON_URL);
+//        val con = url.openConnection() as HttpURLConnection;
+//        // 接続に使ってもよい時間を設定。
+//        con.connectTimeout = 1000
+//        // データ取得に使ってもよい時間。
+//        con.readTimeout = 1000
+//        // HTTP接続メソッドをGETに設定。
+//        con.requestMethod = "GET"
+//        try {
+//            // 接続。
+//            con.connect()
+//            // HttpURLConnectionオブジェクトからレスポンスデータを取得。
+//            val stream = con.inputStream
+//            // レスポンスデータであるInputStreamオブジェクトを文字列に変換。
+//            result = is2String(stream)
+//            // InputStreamオブジェクトを解放。
+//            stream.close()
+//        }
+//        catch(ex: SocketTimeoutException) {
+//            Log.w("pokemon list 情報取得失敗", "通信タイムアウト", ex)
+//        }
 
         return pokemonList;
     }
