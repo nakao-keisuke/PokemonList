@@ -1,0 +1,13 @@
+<rotate xmlns:android="http://schemas.android.com/apk/res/android">
+    <shape
+        android:shape="oval"
+        >
+        <solid android:color="#000000"/>
+        <gradient
+            android:centerX="-10.0"
+            android:startColor="#FFFFFF"
+            android:endColor="#EA578A"
+            android:type="sweep" />
+    </shape>
+
+</rotate>

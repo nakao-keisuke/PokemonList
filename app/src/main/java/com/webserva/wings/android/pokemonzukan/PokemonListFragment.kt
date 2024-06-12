@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.w3c.dom.Text
@@ -37,6 +39,8 @@ import java.nio.charset.StandardCharsets
 
 
 class PokemonListFragment : Fragment() {
+
+    private var _adapter: RecyclerAdapter? = null;
 
     companion object {
 
@@ -56,22 +60,37 @@ class PokemonListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val _rv = view.findViewById<RecyclerView>(R.id.recyclerView);
+        val pb = view.findViewById<ProgressBar>(R.id.progressBar)
+        val tvLoading = view.findViewById<TextView>(R.id.tvLoading)
 
         val layoutManager = GridLayoutManager(
             requireContext(),
             2,
             RecyclerView.VERTICAL,
             false);
-        _rv.layoutManager = layoutManager;
+        _rv?.layoutManager = layoutManager;
 
         CoroutineScope(Dispatchers.Main).launch{
 
-            val pokemonList = getPokemonList();
-            val adapter = RecyclerAdapter(pokemonList);
+            if(_adapter == null){
 
-            _rv.adapter = adapter;
+                pb.visibility = View.VISIBLE
+                tvLoading.visibility = View.VISIBLE
+                val pokemonList = getPokemonList();
+                pb.visibility = View.GONE
+                tvLoading.visibility = View.GONE
+
+                val adapter = RecyclerAdapter(pokemonList);
+
+                _rv.adapter = adapter;
+                _adapter = adapter;
+            }
+            else{
+                _rv.adapter = _adapter;
+            }
         }
     }
+
 
     private inner class RecyclerViewHolder(val view: View): RecyclerView.ViewHolder(view) {
 
@@ -152,31 +171,52 @@ class PokemonListFragment : Fragment() {
     @WorkerThread
     private suspend fun getPokemonList(): MutableList<MutableMap<String, String>> {
 
-        val result = withContext(Dispatchers.IO){
+        val customDispatcher = newFixedThreadPoolContext(12, "CustomPool")
+
+        val result = withContext(customDispatcher){
 
             var result: String = "";
 
             val gson = Gson()
             val pokemonList: MutableList<MutableMap<String, String>> = mutableListOf()
 
-            for (i in 1..151) {
-
-                val url = URL(POKEMON_URL_BASE + i)
+                 val url = URL("https://pokeapi.co/api/v2/pokemon/?offset=0&limit=151")
 
                 val json = url.readText();
                 val jsonObject = JsonParser.parseString(json).asJsonObject
+                val results = jsonObject.getAsJsonArray("results") ;
 
-                val forms = jsonObject.getAsJsonArray("forms")[0].asJsonObject ;
-                val name = forms.getAsJsonPrimitive("name").asString
+                for((index, result) in results.withIndex()){
 
-                val id = jsonObject.getAsJsonPrimitive("id").asString
+                    val pokemonInfo = result.asJsonObject
 
-                val sprites = jsonObject.getAsJsonObject("sprites");
-                val frontImgPath = sprites.getAsJsonPrimitive("front_default").asString
+                    val id = (index + 1).toString()
+                    val name = pokemonInfo.getAsJsonPrimitive("name").asString
 
-                var menu = mutableMapOf("id" to id, "imagePath" to frontImgPath, "name" to name)
-                pokemonList.add(menu)
-            }
+                    val frontImgPath = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
+
+                    var menu = mutableMapOf("id" to id, "imagePath" to frontImgPath, "name" to name)
+                    pokemonList.add(menu)
+                }
+
+//            for (i in 1..151) {
+//
+//                val url = URL(POKEMON_URL_BASE + i)
+//
+//                val json = url.readText();
+//                val jsonObject = JsonParser.parseString(json).asJsonObject
+//
+//                val forms = jsonObject.getAsJsonArray("forms")[0].asJsonObject ;
+//                val name = forms.getAsJsonPrimitive("name").asString
+//
+//                val id = jsonObject.getAsJsonPrimitive("id").asString
+//
+//                val sprites = jsonObject.getAsJsonObject("sprites");
+//                val frontImgPath = sprites.getAsJsonPrimitive("front_default").asString
+//
+//                var menu = mutableMapOf("id" to id, "imagePath" to frontImgPath, "name" to name)
+//                pokemonList.add(menu)
+//            }
 
             pokemonList;
         }
