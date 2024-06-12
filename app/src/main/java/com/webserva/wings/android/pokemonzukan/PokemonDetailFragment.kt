@@ -38,6 +38,10 @@ class PokemonDetailFragment : Fragment() {
             android.R.id.home -> {
                 // 戻るボタンがクリックされたときの処理
                 parentFragmentManager.popBackStack();
+
+                val activity = requireActivity() as MainActivity
+                activity.setupBackButton(false)
+
                 true
             }
             else -> false
@@ -54,6 +58,8 @@ class PokemonDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val activity = requireActivity() as MainActivity
+        activity.setupBackButton(true)
 
         val id = arguments?.getString("id");
         val name = arguments?.getString("name");
