@@ -1,5 +1,6 @@
 package com.webserva.wings.android.pokemonzukan
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -16,7 +17,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.gson.Gson
+import com.google.gson.JsonParser
+import com.webserva.wings.android.pokemonzukan.models.Pokemon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.w3c.dom.Text
 import java.io.BufferedReader
 import java.io.InputStream
@@ -31,7 +40,7 @@ class PokemonListFragment : Fragment() {
 
     companion object {
 
-        private const val POKEMON_URL = "https://pokeapi.co/api/v2/pokemon/1";
+        private const val POKEMON_URL_BASE = "https://pokeapi.co/api/v2/pokemon/";
     }
 
     override fun onCreateView(
@@ -39,6 +48,7 @@ class PokemonListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
+        activity?.title = "一覧"
         return inflater.inflate(R.layout.fragment_pokemon_list, container, false)
     }
 
@@ -54,21 +64,26 @@ class PokemonListFragment : Fragment() {
             false);
         _rv.layoutManager = layoutManager;
 
-        val pokemonList = getPokemonList();
-        val adapter = RecyclerAdapter(pokemonList);
+        CoroutineScope(Dispatchers.Main).launch{
 
-        _rv.adapter = adapter;
+            val pokemonList = getPokemonList();
+            val adapter = RecyclerAdapter(pokemonList);
+
+            _rv.adapter = adapter;
+        }
     }
 
     private inner class RecyclerViewHolder(val view: View): RecyclerView.ViewHolder(view) {
 
         var id: TextView
         var name: TextView
+        var img: ImageView
 
         init {
             // 引数で渡されたリスト1行分の画面部品中から表示に使われるTextViewを取得。
             id = itemView.findViewById(R.id.tvId)
             name = itemView.findViewById(R.id.tvName)
+            img = itemView.findViewById(R.id.imageView)
         }
     }
     private inner class RecyclerAdapter(private val _listData: MutableList<MutableMap<String, String>>) : RecyclerView.Adapter<RecyclerViewHolder>(){
@@ -90,20 +105,20 @@ class PokemonListFragment : Fragment() {
             holder.view.let{
 
                 val item = _listData[position]
-                // メニュー名文字列を取得。
+
                 val id = item["id"] as String
-                // メニュー金額を取得。
                 val name = item["name"] as String
+                val imagePath = item["imagePath"] as String
 
                 holder.id.text = "No. $id"
                 holder.name.text = name
+                Glide.with(this@PokemonListFragment)
+                    .load(imagePath)
+                    .into(holder.img)
+                holder.img.tag = imagePath
 
                 it.setOnClickListener(ListItemClickListener());
             }
-        }
-
-        fun getItem(position: Int): MutableMap<String, String> {
-            return _listData[position]
         }
     }
 
@@ -114,13 +129,15 @@ class PokemonListFragment : Fragment() {
 
                 val LinearLayout = it.findViewById<LinearLayout>(R.id.LinearLayout) ?: return;
 
-                val id = LinearLayout.findViewById<TextView>(R.id.tvId)
-                val name = LinearLayout.findViewById<TextView>(R.id.tvName)
+                val tvId = LinearLayout.findViewById<TextView>(R.id.tvId)
+                val tvName = LinearLayout.findViewById<TextView>(R.id.tvName)
+                val imageView = LinearLayout.findViewById<ImageView>(R.id.imageView)
 
                 val bundle = Bundle();
 
-                bundle.putString("id", id.text.toString())
-                bundle.putString("name", name.text.toString())
+                bundle.putString("id", tvId.text.toString())
+                bundle.putString("name", tvName.text.toString())
+                bundle.putString("imagePath", imageView.tag.toString())
 
                 val transaction  = parentFragmentManager.beginTransaction();
                 transaction.setReorderingAllowed(true)
@@ -132,63 +149,39 @@ class PokemonListFragment : Fragment() {
         }
     }
 
-//    @WorkerThread
-    private  fun getPokemonList(): MutableList<MutableMap<String, String>> {
+    @WorkerThread
+    private suspend fun getPokemonList(): MutableList<MutableMap<String, String>> {
 
-        val pokemonList: MutableList<MutableMap<String, String>> = mutableListOf()
+        val result = withContext(Dispatchers.IO){
 
-		var menu = mutableMapOf<String, String>("id" to "1", "name" to "aaa")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "bbb")
-        pokemonList.add(menu)
-		menu = mutableMapOf("id" to "2", "name" to "ccc")
-        pokemonList.add(menu)
+            var result: String = "";
 
-//        val imageView: ImageView = view.findViewById(R.id.imageView)
-//        val imageUrl = "https://img.wallpaper.sc/ipad/images/2448x2448/ipad-2448x2448-wallpaper_01438.jpg"
-//
-//        Glide.with(this)
-//            .load(imageUrl)
-//            .into(imageView)
+            val gson = Gson()
+            val pokemonList: MutableList<MutableMap<String, String>> = mutableListOf()
 
-//
-//        val url = URL(POKEMON_URL);
-//        val con = url.openConnection() as HttpURLConnection;
-//        // 接続に使ってもよい時間を設定。
-//        con.connectTimeout = 1000
-//        // データ取得に使ってもよい時間。
-//        con.readTimeout = 1000
-//        // HTTP接続メソッドをGETに設定。
-//        con.requestMethod = "GET"
-//        try {
-//            // 接続。
-//            con.connect()
-//            // HttpURLConnectionオブジェクトからレスポンスデータを取得。
-//            val stream = con.inputStream
-//            // レスポンスデータであるInputStreamオブジェクトを文字列に変換。
-//            result = is2String(stream)
-//            // InputStreamオブジェクトを解放。
-//            stream.close()
-//        }
-//        catch(ex: SocketTimeoutException) {
-//            Log.w("pokemon list 情報取得失敗", "通信タイムアウト", ex)
-//        }
+            for (i in 1..151) {
 
-        return pokemonList;
+                val url = URL(POKEMON_URL_BASE + i)
+
+                val json = url.readText();
+                val jsonObject = JsonParser.parseString(json).asJsonObject
+
+                val forms = jsonObject.getAsJsonArray("forms")[0].asJsonObject ;
+                val name = forms.getAsJsonPrimitive("name").asString
+
+                val id = jsonObject.getAsJsonPrimitive("id").asString
+
+                val sprites = jsonObject.getAsJsonObject("sprites");
+                val frontImgPath = sprites.getAsJsonPrimitive("front_default").asString
+
+                var menu = mutableMapOf("id" to id, "imagePath" to frontImgPath, "name" to name)
+                pokemonList.add(menu)
+            }
+
+            pokemonList;
+        }
+
+        return result;
     }
 
     private fun is2String(stream: InputStream): String {
