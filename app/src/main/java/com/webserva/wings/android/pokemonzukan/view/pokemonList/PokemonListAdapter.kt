@@ -13,7 +13,9 @@ import com.webserva.wings.android.pokemonzukan.R
 import com.webserva.wings.android.pokemonzukan.models.Pokemon
 import com.webserva.wings.android.pokemonzukan.view.pokemonDetail.PokemonDetailFragment
 
-class RecyclerAdapter(private val fragment: PokemonListFragment, private val _listData: List<Pokemon>) : RecyclerView.Adapter<PokemonViewHolder>(){
+class RecyclerAdapter(private val fragment: PokemonListFragment) : RecyclerView.Adapter<PokemonViewHolder>(){
+
+    private var _listData: List<Pokemon> = listOf();
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PokemonViewHolder {
 
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -43,6 +45,12 @@ class RecyclerAdapter(private val fragment: PokemonListFragment, private val _li
 
             it.setOnClickListener(ListItemClickListener());
         }
+    }
+
+    fun submitList(pokemonList: List<Pokemon>){
+
+        this._listData = pokemonList;
+        notifyDataSetChanged();
     }
 
     private inner class ListItemClickListener: View.OnClickListener {

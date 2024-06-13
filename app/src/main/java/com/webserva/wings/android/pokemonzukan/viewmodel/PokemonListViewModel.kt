@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonParser
 import com.webserva.wings.android.pokemonzukan.models.Pokemon
 import com.webserva.wings.android.pokemonzukan.view.pokemonList.PokemonListFragment
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.withContext
@@ -19,6 +20,10 @@ class PokemonListViewModel: ViewModel() {
     val pokemonList: LiveData<List<Pokemon>>
         get() = _pokemonList
 
+    private var _isLoading: MutableLiveData<Boolean> = MutableLiveData(false);
+    val isLoading: LiveData<Boolean>
+        get() = _isLoading
+
     companion object {
 
         private const val POKEMON_NAME_URL = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=151";
@@ -27,8 +32,10 @@ class PokemonListViewModel: ViewModel() {
     init{
         viewModelScope.launch{
 
+            _isLoading.postValue(true);delay(2000)
             val pokemonList: List<Pokemon> = getPokemonList();
             _pokemonList.postValue(pokemonList);
+            _isLoading.postValue(false)
         }
     }
 
@@ -56,7 +63,7 @@ class PokemonListViewModel: ViewModel() {
 
                 val imagePath = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
 
-                var pokemon = Pokemon(id, imagePath, name)
+                var pokemon = Pokemon(id, name, imagePath)
                 pokemonList.add(pokemon)
             }
 

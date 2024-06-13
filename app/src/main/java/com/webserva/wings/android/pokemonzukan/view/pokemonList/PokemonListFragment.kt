@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.WorkerThread
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,14 +35,9 @@ import java.nio.charset.StandardCharsets
 
 class PokemonListFragment : Fragment() {
 
-    private val viewModel: PokemonListViewModel = PokemonListViewModel()//後でDI方式に修正
-    private var _adapter: RecyclerAdapter? = null;
+    private val viewModel: PokemonListViewModel by viewModels()
+    private lateinit var _adapter: RecyclerAdapter;
     private lateinit var recyclerView: RecyclerView;
-
-    companion object {
-
-        private const val POKEMON_NAME_URL = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=151";
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,69 +50,39 @@ class PokemonListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val _rv = view.findViewById<RecyclerView>(R.id.recyclerView);
-        val pb = view.findViewById<ProgressBar>(R.id.progressBar)
-        val tvLoading = view.findViewById<TextView>(R.id.tvLoading)
+        _adapter = RecyclerAdapter(this@PokemonListFragment);
+        recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView);
 
         val layoutManager = GridLayoutManager(
             requireContext(),
             2,
             RecyclerView.VERTICAL,
             false);
-        _rv?.layoutManager = layoutManager;
 
-        CoroutineScope(Dispatchers.Main).launch{
+        recyclerView.layoutManager = layoutManager;
+        recyclerView.adapter = _adapter;
 
-            if(_adapter == null){
+        viewModel.pokemonList.observe(viewLifecycleOwner) { newPokemonList ->
+            _adapter.submitList(newPokemonList)
+        }
 
-                pb.visibility = View.VISIBLE
-                tvLoading.visibility = View.VISIBLE
-                val pokemonList = getPokemonList();
-                pb.visibility = View.GONE
-                tvLoading.visibility = View.GONE
-
-                val adapter = RecyclerAdapter(this@PokemonListFragment, pokemonList);
-
-                _rv.adapter = adapter;
-                _adapter = adapter;
-            }
-            else{
-                _rv.adapter = _adapter;
-            }
+        viewModel.isLoading.observe(viewLifecycleOwner) {
+            changeLoadingState(it)
         }
     }
 
-    @WorkerThread
-    private suspend fun getPokemonList(): List<Pokemon> {
+    private fun changeLoadingState(state: Boolean){
 
-        val customDispatcher = newFixedThreadPoolContext(12, "CustomPool")
+        val pb = view?.findViewById<ProgressBar>(R.id.progressBar)
+        val tvLoading = view?.findViewById<TextView>(R.id.tvLoading)
 
-        val result = withContext(customDispatcher){
-
-            val pokemonList: MutableList<Pokemon> = mutableListOf()
-
-            val url = URL(POKEMON_NAME_URL)
-
-            val json = url.readText();
-            val jsonObject = JsonParser.parseString(json).asJsonObject
-            val results = jsonObject.getAsJsonArray("results") ;
-
-            for((index, result) in results.withIndex()){
-
-                val pokemonInfo = result.asJsonObject
-
-                val id = (index + 1).toString()
-                val name = pokemonInfo.getAsJsonPrimitive("name").asString
-
-                val imagePath = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
-
-                var pokemon = Pokemon(id, name, imagePath)
-                pokemonList.add(pokemon)
-            }
-
-            pokemonList.toList();
+        if(state){
+            pb?.visibility = View.VISIBLE
+            tvLoading?.visibility = View.VISIBLE
         }
-
-        return result;
+        else{
+            pb?.visibility = View.GONE
+            tvLoading?.visibility = View.GONE
+        }
     }
 }
