@@ -4,5 +4,5 @@
         android:id="@+id/fragmentMainContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.webserva.wings.android.pokemonzukan.PokemonListFragment">
+        android:name="com.webserva.wings.android.pokemonzukan.view.pokemonList.PokemonListFragment">
 </androidx.fragment.app.FragmentContainerView>

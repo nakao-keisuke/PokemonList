@@ -1,4 +1,4 @@
-package com.webserva.wings.android.pokemonzukan
+package com.webserva.wings.android.pokemonzukan.view.pokemonDetail
 
 import android.content.Context
 import android.os.Bundle
@@ -11,9 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import com.bumptech.glide.Glide
+import com.webserva.wings.android.pokemonzukan.R
+import com.webserva.wings.android.pokemonzukan.models.Pokemon
+import com.webserva.wings.android.pokemonzukan.view.activity.MainActivity
 
 class PokemonDetailFragment : Fragment() {
 
@@ -61,9 +62,10 @@ class PokemonDetailFragment : Fragment() {
         val activity = requireActivity() as MainActivity
         activity.setupBackButton(true)
 
-        val id = arguments?.getString("id");
-        val name = arguments?.getString("name");
-        val imagePath = arguments?.getString("imagePath");
+        val pokemon = arguments?.getSerializable("pokemon") as Pokemon;
+        val id = pokemon.id;
+        val name = pokemon.name;
+        val imagePath = pokemon.imagePath;
 
         val tvId = view.findViewById<TextView>(R.id.tvId);
         val tvName = view.findViewById<TextView>(R.id.tvName);
