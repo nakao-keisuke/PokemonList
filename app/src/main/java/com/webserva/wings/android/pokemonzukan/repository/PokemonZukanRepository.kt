@@ -14,7 +14,7 @@ class PokemonZukanRepository {
         private const val POKEMON_NAME_URL = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=151";
     }
     @WorkerThread
-    private suspend fun getPokemonList(): List<Pokemon> {
+    suspend fun getPokemonList(): List<Pokemon> {
 
         val customDispatcher = newFixedThreadPoolContext(12, "CustomPool")
 
@@ -34,10 +34,9 @@ class PokemonZukanRepository {
 
                 val id = (index + 1).toString()
                 val name = pokemonInfo.getAsJsonPrimitive("name").asString
-
                 val imagePath = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png"
 
-                var pokemon = Pokemon(id, name, imagePath)
+                val pokemon = Pokemon(id, name, imagePath)
                 pokemonList.add(pokemon)
             }
 

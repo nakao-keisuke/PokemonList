@@ -13,8 +13,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        supportActionBar?.setHomeActionContentDescription("一覧")
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.rgb(231, 78, 127)))
+        supportActionBar?.title = "一覧"
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.rgb(254, 38, 75)))
     }
 
     fun setupBackButton(enableBackButton: Boolean) {

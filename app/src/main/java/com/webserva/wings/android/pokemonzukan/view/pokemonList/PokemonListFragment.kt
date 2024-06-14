@@ -1,6 +1,8 @@
 package com.webserva.wings.android.pokemonzukan.view.pokemonList
 
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +12,12 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.WorkerThread
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.ActionBar.DISPLAY_HOME_AS_UP
+import androidx.appcompat.app.ActionBar.DISPLAY_SHOW_HOME
+import androidx.appcompat.app.ActionBar.DISPLAY_SHOW_TITLE
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -49,6 +57,12 @@ class PokemonListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+//
+//        val toolBar = activity?.findViewById<Toolbar>(R.id.toolBar)
+//
+//        toolBar?.setTitle("一覧")
+//        toolBar?.setTitleTextColor(Color.WHITE)
+//        toolBar?.setTitleTextAppearance(requireContext(), R.style.ToolbarTitleCentered)
 
         _adapter = RecyclerAdapter(this@PokemonListFragment);
         recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView);

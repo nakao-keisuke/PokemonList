@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.webserva.wings.android.pokemonzukan.R
@@ -58,11 +59,11 @@ class RecyclerAdapter(private val fragment: PokemonListFragment) : RecyclerView.
 
             view?.let{
 
-                val LinearLayout = it.findViewById<LinearLayout>(R.id.LinearLayout) ?: return;
+                val pokemonContainer = it.findViewById<ConstraintLayout>(R.id.pokemonContainer) ?: return;
 
-                val tvId = LinearLayout.findViewById<TextView>(R.id.tvId)
-                val tvName = LinearLayout.findViewById<TextView>(R.id.tvName)
-                val imageView = LinearLayout.findViewById<ImageView>(R.id.imageView)
+                val tvId = pokemonContainer.findViewById<TextView>(R.id.tvId)
+                val tvName = pokemonContainer.findViewById<TextView>(R.id.tvName)
+                val imageView = pokemonContainer.findViewById<ImageView>(R.id.imageView)
 
                 val bundle = Bundle()
                 val pokemon = Pokemon(tvId.text.toString(), tvName.text.toString(), imageView.tag.toString())
